@@ -14,12 +14,13 @@ const postsSlice = createSlice({
         state.push(action.payload)
       },
       // prepare is basically a hook into the action creator for this reducer
-      prepare(title, content) {
+      prepare(title, content, userId) {
         return {
           payload: {
             id: nanoid(),
             title,
-            content
+            content,
+            user: userId,
           }
         }
       }
