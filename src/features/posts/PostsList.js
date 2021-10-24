@@ -1,12 +1,25 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { TimeAgo } from './TimeAgo'
 import { PostAuthor } from './PostAuthor'
 import { ReactionButtons } from './ReactionButtons'
+import { fetchPosts, selectAllPosts } from './postsSlice'
 
 export const PostsList = () => {
-  const posts = useSelector(state => state.posts)
+  const dispatch = useDispatch()
+  const posts = useSelector(selectAllPosts)
+
+  const postStatus = useSelector(state => state.posts.status)
+  useEffect(() => {
+    // I suppose this re-uses things in the store between component mounts.
+    // Upside: data is immediately ready.
+    // Downside: even on page re-load post status is not refreshed currently.
+    if (postStatus === 'idle') {
+      dispatch(fetchPosts())
+    }
+  }, [postStatus, dispatch])
+
   // Sort posts in reverse chronological order by datetime string
   const orderedPosts = posts.slice().sort((a, b) => b.date.localeCompare(a.date))
 
