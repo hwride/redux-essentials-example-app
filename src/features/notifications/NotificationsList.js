@@ -12,6 +12,7 @@ export const NotificationsList = () => {
   const notifications = useSelector(selectAllNotifications)
   const users = useSelector(selectAllUsers)
 
+  // We mark notifications as read whenever this component renders. We assume at this point the user has seen the messages.
   useLayoutEffect(() => {
     dispatch(allNotificationsRead())
   })
