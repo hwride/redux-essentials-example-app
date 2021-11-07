@@ -1,14 +1,12 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { TimeAgo } from './TimeAgo'
 import { PostAuthor } from './PostAuthor'
 import { ReactionButtons } from './ReactionButtons'
-import { fetchPosts, selectPostById, selectPostIds } from './postsSlice'
 import { Spinner } from '../../components/Spinner'
+import { useGetPostsQuery } from '../api/apiSlice'
 
-const PostExcerpt = ({ postId }) => {
-  const post = useSelector(state => selectPostById(state, postId))
+let PostExcerpt = ({ post }) => {
   return (
     <article className="post-excerpt" key={post.id}>
       <h3>{post.title}</h3>
@@ -27,30 +25,22 @@ const PostExcerpt = ({ postId }) => {
 }
 
 export const PostsList = () => {
-  const dispatch = useDispatch()
-  const orderedPostIds = useSelector(selectPostIds)
-
-  const postStatus = useSelector(state => state.posts.status)
-  const error = useSelector(state => state.posts.error)
-  useEffect(() => {
-    // I suppose this re-uses things in the store between component mounts.
-    // Upside: data is immediately ready.
-    // Downside: even on page re-load post status is not refreshed currently.
-    if (postStatus === 'idle') {
-      dispatch(fetchPosts())
-    }
-  }, [postStatus, dispatch])
+  const {
+    data: posts,
+    isLoading,
+    isSuccess,
+    isError,
+    error
+  } = useGetPostsQuery()
 
   let content
 
-  if (postStatus === 'loading') {
+  if (isLoading) {
     content = <Spinner text="Loading..." />
-  } else if (postStatus === 'succeeded') {
-    content = orderedPostIds.map(postId => (
-      <PostExcerpt key={postId} postId={postId} />
-    ))
-  } else if (postStatus === 'failed') {
-    content = <div>{error}</div>
+  } else if (isSuccess) {
+    content = posts.map(post => <PostExcerpt key={post.id} post={post} />)
+  } else if (isError) {
+    content = <div>{error.toString()}</div>
   }
 
   return (
