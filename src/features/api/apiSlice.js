@@ -17,7 +17,7 @@ export const apiSlice = createApi({
       // Note you should handle result being undefined in case of error or no data. Handle it here by assigning a
       // default value of empty array.
       providesTags: (result = [], error, arg) => [
-        'Post',
+        { type: 'Post', id: 'LIST' },
         // Because we provide a tag for each individual post, whenever an individual post is edited we will re-fetch
         // the entire posts list.
         ...result.map(({ id }) => ({ type: 'Post', id }))
@@ -40,7 +40,7 @@ export const apiSlice = createApi({
       }),
       // If we'd say invalidated only post + ID tag, then because that tag doesn't yet exist for getPosts, it wouldn't
       // actually cause a re-fetch of posts list. So instead we have to invalidate the generic tag.
-      invalidatesTags: ['Post']
+      invalidatesTags: [{ type: 'Post', id: 'LIST' }]
     }),
     editPost: builder.mutation({
       query: post => ({
