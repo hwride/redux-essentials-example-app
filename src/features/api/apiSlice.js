@@ -7,12 +7,14 @@ export const apiSlice = createApi({
   reducerPath: 'api',
   // All of our requests will have URLs starting with '/fakeApi'
   baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
+  tagTypes: ['Post'],
   // The "endpoints" represent operations and requests for this server
   endpoints: builder => ({
     // The `getPosts` endpoint is a "query" operation that returns data
     getPosts: builder.query({
       // The URL for the request is '/fakeApi/posts'
-      query: () => '/posts'
+      query: () => '/posts',
+      providesTags: ['Post']
     }),
     // Note previously we always requested all posts and then in SinglePostPage looked up the post we needed from that.
     // Adding an endpoint to query an individual post partially to demo support for query args in RTKQ. But also this
@@ -27,7 +29,8 @@ export const apiSlice = createApi({
         method: 'POST',
         // Include the entire post object as the body of the request
         body: initialPost // fetchBaseQuery automatically serializes JSON to string for our body
-      })
+      }),
+      invalidatesTags: ['Post']
     })
   })
 })
