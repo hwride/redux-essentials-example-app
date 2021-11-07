@@ -1,18 +1,16 @@
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
-
-import { postUpdated, selectPostById } from './postsSlice'
+import { useEditPostMutation, useGetPostQuery } from '../api/apiSlice'
 
 export const EditPostForm = ({ match }) => {
   const { postId } = match.params
 
-  const post = useSelector(state => selectPostById(state, postId))
+  const { data: post } = useGetPostQuery(postId)
+  const [updatePost, { isLoading }] = useEditPostMutation()
 
   const [title, setTitle] = useState(post.title)
   const [content, setContent] = useState(post.content)
 
-  const dispatch = useDispatch()
   const history = useHistory()
 
   return (
@@ -36,9 +34,10 @@ export const EditPostForm = ({ match }) => {
           onChange={e => setContent(e.target.value)}
         />
       </form>
-      <button type="button" onClick={() => {
+      <button type="button" onClick={async () => {
         if (title && content) {
-          dispatch(postUpdated({ id: postId, title, content }))
+          await updatePost({ id: postId, title, content })
+          // Current there's no auto-update after this atm. Could e.g. call refetch here to trigger that.
           history.push(`/posts/${postId}`)
         }
       }}>
