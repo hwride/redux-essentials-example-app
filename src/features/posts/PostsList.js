@@ -5,6 +5,7 @@ import { PostAuthor } from './PostAuthor'
 import { ReactionButtons } from './ReactionButtons'
 import { Spinner } from '../../components/Spinner'
 import { useGetPostsQuery } from '../api/apiSlice'
+import classnames from 'classnames'
 
 let PostExcerpt = ({ post }) => {
   return (
@@ -27,10 +28,12 @@ let PostExcerpt = ({ post }) => {
 export const PostsList = () => {
   const {
     data: posts = [],
-    isLoading,
+    isLoading, // Is loading first request for data.
+    isFetching, // Is loading any request for data.
     isSuccess,
     isError,
-    error
+    error,
+    refetch
   } = useGetPostsQuery()
 
   // Sort posts.
@@ -46,7 +49,10 @@ export const PostsList = () => {
   if (isLoading) {
     content = <Spinner text="Loading..." />
   } else if (isSuccess) {
-    content = sortedPosts.map(post => <PostExcerpt key={post.id} post={post} />)
+    const renderedPosts = sortedPosts.map(post => <PostExcerpt key={post.id} post={post} />)
+    // Make container look slightly transparent while we are updating posts.
+    const containerClassname = classnames('posts-container', { disabled: isFetching })
+    content = <div className={containerClassname}>{renderedPosts}</div>
   } else if (isError) {
     content = <div>{error.toString()}</div>
   }
@@ -54,6 +60,7 @@ export const PostsList = () => {
   return (
     <section className="posts-list">
       <h2>Posts</h2>
+      <button onClick={refetch}>Refetch Posts</button>
       {content}
     </section>
   )

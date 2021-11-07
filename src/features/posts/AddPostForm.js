@@ -1,18 +1,17 @@
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { addNewPost } from './postsSlice'
+import { useSelector } from 'react-redux'
 import { selectAllUsers } from '../users/usersSlice'
+import { useAddNewPostMutation } from '../api/apiSlice'
 
 export const AddPostForm = () => {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [userId, setUserId] = useState('')
-  const [addRequestStatus, setAddRequestStatus] = useState('idle')
 
-  const dispatch = useDispatch()
+  const [addNewPost, { isLoading }] = useAddNewPostMutation()
 
   const users = useSelector(selectAllUsers)
-  const canSave = [title, content, userId].every(Boolean) && addRequestStatus === 'idle'
+  const canSave = [title, content, userId].every(Boolean) && !isLoading
 
   return (
     <section>
@@ -45,15 +44,12 @@ export const AddPostForm = () => {
         <button type="button"  disabled={!canSave} onClick={async () => {
           if (canSave) {
             try {
-              setAddRequestStatus('pending')
-              await dispatch(addNewPost({ title, content, user: userId })).unwrap()
+              await addNewPost({ title, content, user: userId }).unwrap()
               setTitle('')
               setContent('')
               setUserId('')
             } catch (err) {
               console.error('Failed to save the post: ', err)
-            } finally {
-              setAddRequestStatus('idle')
             }
           }
         }}>Save Post</button>
