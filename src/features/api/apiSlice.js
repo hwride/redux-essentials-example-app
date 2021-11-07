@@ -13,9 +13,16 @@ export const apiSlice = createApi({
     getPosts: builder.query({
       // The URL for the request is '/fakeApi/posts'
       query: () => '/posts'
-    })
+    }),
+    // Note previously we always requested all posts and then in SinglePostPage looked up the post we needed from that.
+    // Adding an endpoint to query an individual post partially to demo support for query args in RTKQ. But also this
+    // would give us the ability to link directly to a post page and only request that post instead of requesting all
+    // posts.
+    getPost: builder.query({
+      query: postId => `/posts/${postId}`
+    }),
   })
 })
 
 // Export the auto-generated hook for the `getPost` query endpoint
-export const { useGetPostsQuery } = apiSlice
+export const { useGetPostsQuery, useGetPostQuery  } = apiSlice
