@@ -14,14 +14,22 @@ export const apiSlice = createApi({
     getPosts: builder.query({
       // The URL for the request is '/fakeApi/posts'
       query: () => '/posts',
-      providesTags: ['Post']
+      // Note you should handle result being undefined in case of error or no data. Handle it here by assigning a
+      // default value of empty array.
+      providesTags: (result = [], error, arg) => [
+        'Post',
+        // Because we provide a tag for each individual post, whenever an individual post is edited we will re-fetch
+        // the entire posts list.
+        ...result.map(({ id }) => ({ type: 'Post', id }))
+      ]
     }),
     // Note previously we always requested all posts and then in SinglePostPage looked up the post we needed from that.
     // Adding an endpoint to query an individual post partially to demo support for query args in RTKQ. But also this
     // would give us the ability to link directly to a post page and only request that post instead of requesting all
     // posts.
     getPost: builder.query({
-      query: postId => `/posts/${postId}`
+      query: postId => `/posts/${postId}`,
+      providesTags: (result, error, arg) => [{ type: 'Post', id: arg }]
     }),
     addNewPost: builder.mutation({
       query: initialPost => ({
@@ -30,6 +38,8 @@ export const apiSlice = createApi({
         // Include the entire post object as the body of the request
         body: initialPost // fetchBaseQuery automatically serializes JSON to string for our body
       }),
+      // If we'd say invalidated only post + ID tag, then because that tag doesn't yet exist for getPosts, it wouldn't
+      // actually cause a re-fetch of posts list. So instead we have to invalidate the generic tag.
       invalidatesTags: ['Post']
     }),
     editPost: builder.mutation({
@@ -37,7 +47,8 @@ export const apiSlice = createApi({
         url: `/posts/${post.id}`,
         method: 'PATCH',
         body: post
-      })
+      }),
+      invalidatesTags: (result, error, arg) => [{ type: 'Post', id: arg.id }]
     })
   })
 })
