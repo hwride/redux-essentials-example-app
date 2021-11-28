@@ -4,12 +4,17 @@ import { formatDistanceToNow, parseISO } from 'date-fns'
 
 import { selectAllUsers } from '../users/usersSlice'
 
-import { allNotificationsRead, selectAllNotifications } from './notificationsSlice'
+import {
+  useGetNotificationsQuery,
+  allNotificationsRead,
+  selectMetadataEntities,
+} from './notificationsSlice'
 import classnames from 'classnames'
 
 export const NotificationsList = () => {
   const dispatch = useDispatch()
-  const notifications = useSelector(selectAllNotifications)
+  const { data: notifications = [] } = useGetNotificationsQuery()
+  const notificationsMetadata = useSelector(selectMetadataEntities)
   const users = useSelector(selectAllUsers)
 
   // We mark notifications as read whenever this component renders. We assume at this point the user has seen the messages.
@@ -24,8 +29,9 @@ export const NotificationsList = () => {
       name: 'Unknown User'
     }
 
+    const metadata = notificationsMetadata[notification.id]
     const notificationClassname = classnames('notification', {
-      new: notification.isNew
+      new: metadata.isNew,
     })
 
     return (
